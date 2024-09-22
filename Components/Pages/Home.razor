@@ -1,0 +1,70 @@
+﻿@page "/"
+@inject DeezerService DeezerService
+@rendermode InteractiveServer
+
+<PageTitle>Deezer - Search Tracks</PageTitle>
+
+<h3>Deezer - Search Tracks</h3>
+
+<div class="mb-4 mt-4">
+    <input @bind="searchQuery" placeholder="Enter search term..." />
+    <button @onclick="Search">Search</button>
+    <hr>
+</div>
+
+@if (tracks != null)
+{
+    <div class="alert alert-info" role="alert">
+        @tracks.Count músicas encontradas
+    </div>
+    <div class="row">
+        @foreach (var track in tracks)
+        {
+            <div class="col-md-3">
+                <div class="card mb-3">
+                    <img class="card-img-top" src="@track.Album.Cover_medium" alt="@track.Title" />
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h5 class="card-title">@track.Title</h5>
+                            <p class="card-text">@track.Artist.Name</p>
+                            <a href="@track.Link" target="_blank">Ver no Deezer</a>
+                        </div>
+                        <audio controls>
+                            <source src="@track.Preview" type="audio/mpeg">
+                            Seu navegador não suporta o elemento <code>audio</code>.
+                        </audio>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (errorMesage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMesage
+    </div>
+}
+
+@code {
+    private string searchQuery;
+    private List<TrackData> tracks;
+
+    private string? errorMesage;
+
+    private async Task Search()
+    {
+        errorMesage = null;
+        try
+        {
+            var result = await DeezerService.SearchTracksAsync(searchQuery);
+            tracks = result.Data;
+        }
+        catch (Exception ex)
+        {
+            errorMesage = ex.Message;
+            Console.WriteLine(ex.Message);
+        }
+    }
+}
